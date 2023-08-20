@@ -17,5 +17,21 @@
         </li>
       </ul>
     </div>
+    <div class="collapse navbar-collapse">
+      <ul class="navbar-nav d-flex align-items-center ">
+        <% if(!currentUser) {%>
+          <li class="nav-item">
+            <a class="btn btn-sm btn-success me-2"  href="/login">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="btn btn-sm btn-primary me-2"  href="/register">Signup</a>
+          </li>
+        <% } else {%>
+          <li class="nav-item">
+            <a class="btn btn-sm btn-warning" href="/logout">Logout</a>
+          </li>
+        <% } %>
+      </ul>
+    </div>
   </div>
 </nav>
