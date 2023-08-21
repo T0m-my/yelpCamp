@@ -1,59 +1,27 @@
 import express from 'express';
 const router = express.Router();
 import passport from 'passport';
-import _ from 'lodash';
-import User from '../models/user.js';
 import { storeOriginalUrl } from '../middleware.js';
 import { catchAsyncError } from '../utils/catchAsyncError.js';
+import * as authController from '../controllers/authController.js';
 
 router.route('/login')
-  .get( (req, res) => {
-    res.render('auth/login');
-  })
+  .get( authController.getLoginPage )
 
-  .post( storeOriginalUrl, passport.authenticate(
+  .post(
+    storeOriginalUrl,
+    passport.authenticate(
       'local',
       { failureFlash: true, failureRedirect: '/login' }
     ),
-    (req, res) => {
-      req.flash('success', `Welcome back ${_.capitalize(req.user.username)}!`);
-      const redirectUrl = res.locals.returnToUrl || '/campgrounds';
-      res.redirect(redirectUrl);
-    }
+    authController.login
   );
 
 router.route('/register')
-  .get( (req, res) => {
-    res.render('auth/register')
-  })
+  .get( authController.getRegisterPage )
 
-  .post( catchAsyncError( async (req, res, next) => {
-    const { username, email, password } = req.body;
-    try {
-      
-      const newUser = new User({ username, email });
-      const registeredUser = await User.register(newUser, password);
-      req.login(registeredUser, err => {
-        if(err) return next(err);
-        req.flash('success', `Welcome to Yelp Camp ${_.capitalize(req.user.username)}!`);
-        console.log('***SESSION**',req.session)
-        console.log('?????**ORIGINAL_URL',req.originalUrl)
-        return res.redirect('/campgrounds');
-      });
-    } catch (e) {
-      req.flash('error', e.message);
-      res.redirect('/register');
-    }
-  }));
+  .post( catchAsyncError(authController.register));
 
-router.get('/logout', (req, res, next) => {
-  req.logOut(function(err){
-    if(err) return next(err);
-
-    req.flash('success', 'You have logged out.')
-    res.redirect('/campgrounds');
-  });
-
-});
+router.get('/logout', authController.logout);
 
 export default router;

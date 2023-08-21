@@ -1,8 +1,13 @@
 import mongoose from 'mongoose';
 import { Review } from './review.js';
+import User from './user.js';
 const { Schema } = mongoose;
 
 const campgroundSchema = new mongoose.Schema({
+  creator: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  },
   name: String,
   price: Number,
   image: String,
