@@ -1,4 +1,5 @@
-import Campground from "../models/campground.js";
+import Campground from '../models/campground.js';
+import { cloudinary } from '../cloudinary/index.js';
 
 const getAllCampgrounds = async (req, res) => {
   const campgrounds = await Campground.find();
@@ -31,8 +32,28 @@ const viewCampground = async (req, res) => {
 
 const updateCampground = async (req, res) => {
   const { id } = req.params;
-  // const { name, location } = req.body.campground;
-  await Campground.findByIdAndUpdate(id, { ...req.body.campground});
+  const updatedCampground = await Campground.findByIdAndUpdate(id, { ...req.body.campground});
+  // const updateCampground = await Campground.findById(id);
+  // updateCampground = { ...req.body.campground }
+  if(req.files){
+    const images = req.files.map( file => ({filename: file.filename, url: file.path}) );
+    updatedCampground.images.push(...images);
+    await updatedCampground.save();
+  }
+  if(req.body.deleteImages){
+    for(let filename of req.body.deleteImages){
+      await cloudinary.uploader.destroy(filename);
+    }
+    await updatedCampground.updateOne(
+      {$pull:
+        {images:
+          {filename:
+            {$in: req.body.deleteImages}
+          }
+        }
+      }
+    );
+  }
   req.flash('success', 'Campground updated successfully!');
   res.redirect(`/campgrounds/${id}`);
 };
@@ -49,14 +70,14 @@ const editCampground = async (req, res) => {
 
 const createCampground = async (req, res) => {
   // if(!req.body.campground) throw new ExpressError('Invalid Campground Data', 404);
-  const { name, location, price, description, image } = req.body.campground;
+  const { name, location, price, description } = req.body.campground;
   const camp = new Campground({
     name,
     location,
     price,
     description,
-    image
   });
+  camp.images = req.files.map( file => ({ url: file.path, filename: file.filename }));
   camp.creator = req.user._id;
   await camp.save();
   req.flash('success', 'Successfully created campground!');

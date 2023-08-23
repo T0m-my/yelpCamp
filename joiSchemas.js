@@ -8,9 +8,10 @@ export const campgroundJoiSchema = Joi.object({
       .min(0)
       .required(),
     location: Joi.string().required(),
-    image: Joi.string().required(),
+    // image: Joi.string().required(),
     description: Joi.string().required()
-  }).required()
+  }).required(),
+  deleteImages: Joi.array()
 });
 
 export const reviewsJoiSchema = Joi.object({

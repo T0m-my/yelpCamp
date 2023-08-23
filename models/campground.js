@@ -3,6 +3,15 @@ import { Review } from './review.js';
 import User from './user.js';
 const { Schema } = mongoose;
 
+const imageSchema = new mongoose.Schema({
+  url: String,
+  filename: String
+});
+
+imageSchema.virtual('thumbnail').get(function(){
+  return this.url.replace('/upload', '/upload/w_200,h_200');
+});
+
 const campgroundSchema = new mongoose.Schema({
   creator: {
     type: Schema.Types.ObjectId,
@@ -10,7 +19,7 @@ const campgroundSchema = new mongoose.Schema({
   },
   name: String,
   price: Number,
-  image: String,
+  images: [imageSchema],
   description: String,
   location: String,
   reviews: [
