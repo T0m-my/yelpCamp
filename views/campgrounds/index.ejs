@@ -1,11 +1,18 @@
   <% layout('layouts/boilerplate') %>
+  <script>
+    const defaultImageUrl = 'https://res.cloudinary.com/drefkmvsn/image/upload/v1692771968/YelpCamp/sfw0dcmvxogzbq1kyw6h.jpg'
+  </script>
   <h1>All Campgrounds</h1>
   <h2><a href="/campgrounds/new"> Add new campground</a></h2>
   <% for(let campground of campgrounds) {%>
     <div class="card">
       <div class="row">
         <div class="col-md-4">
-          <img src="<%= campground.images[0].url %>" alt="Camp image" class="img-fluid">
+          <% if(campground.images.length){ %>
+            <img src="<%= campground.images[0].url %>" alt="Camp image" class="img-fluid">
+          <% }else { %>
+            <img src="<%= defaultImageUrl %>" alt=" Default Camp image" class="img-fluid">
+          <% } %>
         </div>
         <div class="col-md-8">
           <div class="card-body">

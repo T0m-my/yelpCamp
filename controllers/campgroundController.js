@@ -1,5 +1,9 @@
 import Campground from '../models/campground.js';
 import { cloudinary } from '../cloudinary/index.js';
+import mbxGeocoding from '@mapbox/mapbox-sdk/services/geocoding.js';
+
+const mapBoxToken = process.env.MAPBOX_TOKEN;
+const geocodingClient = mbxGeocoding({accessToken: mapBoxToken});
 
 const getAllCampgrounds = async (req, res) => {
   const campgrounds = await Campground.find();
@@ -70,15 +74,23 @@ const editCampground = async (req, res) => {
 
 const createCampground = async (req, res) => {
   // if(!req.body.campground) throw new ExpressError('Invalid Campground Data', 404);
-  const { name, location, price, description } = req.body.campground;
+  const geoData = await geocodingClient.forwardGeocode({
+    query: req.body.campground.location,
+    limit: 1
+  }).send();
+  req.body.campground.geometry = geoData.body.features[0].geometry;
+  const { name, location, price, description, geometry } = req.body.campground;
   const camp = new Campground({
     name,
     location,
+    geometry,
     price,
     description,
   });
   camp.images = req.files.map( file => ({ url: file.path, filename: file.filename }));
   camp.creator = req.user._id;
+  // console.log('****CAMP', camp)
+  // return res.send('OK')
   await camp.save();
   req.flash('success', 'Successfully created campground!');
   res.redirect(`campgrounds/${camp._id}`);
